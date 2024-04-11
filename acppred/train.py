@@ -1,10 +1,11 @@
 from acppred.models import Model
 from sklearn.metrics import classification_report
 from sklearn.base import BaseEstimator
+from argparse import ArgumentParser
 import pickle
 import pandas as pd
 
-def train_model(csv_file:str, output_file:str):
+def train_model(csv_file:str, output_file:str, estimator:str) -> BaseEstimator:
     """
     Trains a classification model for anticancer peptide
     prediction from a amino acid composition CSV file and
@@ -16,6 +17,8 @@ def train_model(csv_file:str, output_file:str):
     - csv_file (str): input file containing aa composition of anticancer
                     and non anticancer peptides.
     - output-file (str): output .pickle file with the trained model
+    - estimator(str):type of the estimator to be tarined(logistic regression 
+                    or random forest)
 
     Returns:
 
@@ -26,7 +29,7 @@ def train_model(csv_file:str, output_file:str):
     X_train = df.drop(['activity'], axis=1)
     y_train = df ['activity'] 
 
-    model = Model(estimator='random_forest')
+    model = Model(estimator= estimator)
     model.fit(X_train, y_train)
     model.save(output_file)
 
@@ -53,7 +56,23 @@ def evaluate_model(model:BaseEstimator, csv_file:str) -> str:
     report =classification_report(y_test, y_pred)
     return report
 
-if __name__ == '__main__':
-    model = train_model('data/processed/train.csv', 'data/models/model.pickle')
-    report = evaluate_model(model, 'data/processed/test.csv')
+def main():
+
+    argument_parser = ArgumentParser()
+    argument_parser.add_argument('input_directory', help='directory containing the processed files.')
+    argument_parser.add_argument('output', help='path to save the trained model')
+    argument_parser.add_argument(
+        '-e', '--estimator',
+        help= 'type of the estimator to be trained',
+        choices= ['random_forest', 'logistic_regression'],
+        default='random_forest'
+    )
+
+    arguments = argument_parser.parse_args()
+    model = train_model(f'{arguments.input_directory}/train.csv', arguments.output, arguments.estimator)
+    report = evaluate_model(model, f'{arguments.input_directory}/test.csv')
     print(report)
+
+if __name__ == '__main__':  
+    main()
+    
