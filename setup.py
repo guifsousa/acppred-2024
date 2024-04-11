@@ -6,5 +6,15 @@ setup(
     packages= find_packages(),
     author= "Guilherme Sousa",
     author_email= 'guilhermefeijodesousa@gmail.com',
-    description= "anticancer peptide prediction tool"
+    description= "anticancer peptide prediction tool",
+    entry_points = {
+        'console_scripts': [
+            'acppred-preprocess = acppred.preprocess:main',
+            'acppred-train = acppred.train:main',
+            'acppred-predict = acppred.predict:main'
+
+        ]
+            
+
+    }
 )
